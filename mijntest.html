@@ -94,14 +94,93 @@ var out = document.querySelector(".output");
   var expr = document.getElementById('expr'),
       pretty = document.getElementById('pretty'),
       result = document.getElementById('result'),
+      transfo = document.getElementById('transfo'),
       parenthesis = 'keep',
       implicit = 'hide';
 
-expr.oninput = function () {
-    
-    var node = math.parse(expr.value)
+// Selectfunctie en andere speciale functies
 
-      try {
+var customFunctions = {
+  plus: function (a, b) {
+    return a + b;
+  },
+  minus: function (a, b) {
+    return a - b;
+  },
+  binom: function (n, k) {
+    return 1;
+  },
+  Select: function (a) {
+    return a;
+  }
+
+
+};
+
+customFunctions.plus.toTex = '${args[0]}+${args[1]}'; //template string
+customFunctions.binom.toTex = '\\mathrm{${name}}\\left(${args}\\right)'; //template string
+customFunctions.minus.toTex = function (node, options) { return node.args[0].toTex(options) 
+  + node.name + node.args[1].toTex(options);
+};
+customFunctions.Select.toTex = function (node, options) {
+  return '\\textcolor{blue}{' + node.args[0].toTex(options) + '}';
+};
+
+math.import(customFunctions);
+
+// einde speciale functies (oa select)
+
+function substituteselected(subst, bignode) {
+    
+    eq = bignode.transform(function (node, path, parent) {
+  if (node.name === 'Select') {
+      console.log('subbed')
+    return substitution;
+  }
+
+//  }
+  else {
+      console.log('nosub')
+      return node;
+  }
+});
+
+eq = eq.transform(function (node, path, parent) {
+  if (node.name === 'Salect') {
+      console.log('subbed')
+    return math.parse('Select(' + node.args[0] + ')');
+  }
+
+  else {
+      console.log('nosub')
+      return node;
+  }
+});
+
+return eq
+
+};
+
+
+
+var equation = math.parse('');
+
+selected = function (node) {
+      
+var filtered = node.filter(function (node) {
+  return node.isFunctionNode && node.name === 'Select';
+});
+
+return filtered;
+
+}
+
+updatelatex = function (node) {
+    try {
+        // update expression
+
+        expr.value = equation;
+
       // export the expression to LaTeX
         var latex = node ? node.toTex({parenthesis: parenthesis, implicit: implicit}) : '';
       console.log('LaTeX expression:', latex);
@@ -110,11 +189,53 @@ expr.oninput = function () {
       katex.render(latex, pretty);
     }
     catch (err) {pretty.innerHTML = "error!!!"}
+}
 
+updatelatex(equation);
+
+
+function pluskey() {
+    expr.value = '(x^3)/(Select(cos(3x))^2)'
+}
+
+function timeskey() {
+    alert("test")
+}
+function powerkey() {
+
+substitution = math.parse('(Salect(x)) ^ y');
+equation = substituteselected( substitution, equation);
+updatelatex(equation);
+
+}
+function minuskey() {
+    alert("test")
+}
+function dividekey() {
+
+substitution = math.parse('(Salect(x)) / y');
+equation = substituteselected( substitution, equation);
+updatelatex(equation);
+}
+function nthrootkey() {
+
+substitution = math.parse('nthRoot(Salect(x),n)');
+equation = substituteselected( substitution, equation);
+updatelatex(equation);
+}
+function equalskey() {
+    equation = math.parse('Select(a)==b');
+    updatelatex(equation);
+}
+
+expr.oninput = function () {
+    
+    equation = math.parse(expr.value)
+    updatelatex(equation);
+    
 }
 
  document.onkeydown = keysPressed
- document.onkeyup = keysReleased
   
 function  keysPressed(e) {
 
@@ -161,6 +282,14 @@ else
         case 38: out.innerHTML = 'up'; break;
         case 39: out.innerHTML = 'right';  katex.render("\\rightarrow", pretty); break;
         case 40: out.innerHTML = 'down'; break;
+        
+        case 173: pluskey(); break;
+        case 164: timeskey(); break;
+        case 192: powerkey(); break;
+        case 169: minuskey(); break;
+        case 160: dividekey(); break;
+        case 165: nthrootkey(); break;
+        case 61: equalskey(); break;
     }
 };
 
