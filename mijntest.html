@@ -1,9 +1,182 @@
-<p> testpara</p>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>math.js | basic usage</title>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.20.1/math.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-beta/katex.min.css" integrity="sha384-L/SNYu0HM7XECWBeshTGLluQO9uVI1tvkCtunuoUbCHHoTH76cDyXty69Bb9I0qZ" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-beta/katex.min.js" integrity="sha384-ad+n9lzhJjYgO67lARKETJH6WuQVDDlRfj81AJJSswMyMkXTD49wBj5EP004WOY6" crossorigin="anonymous"></script>
+
+
+<style>
+        body,
+        html,
+        table td,
+        table th,
+        input[type=text] {
+          font-size: 11pt;
+          font-family: verdana, arial, sans-serif;
+        }
+    
+        h1 {
+          font-size: 11pt;
+        }
+    
+        input[type=text] {
+          padding: 5px;
+          width: 400px;
+        }
+    
+        table {
+          border-collapse: collapse;
+        }
+    
+        table td,
+        table th {
+          padding: 5px;
+          border: 1px solid lightgray;
+        }
+    
+        table th {
+          background-color: lightgray;
+        }
+    
+      </style>
+
+</head>
+
 
 <body>
+
+
+<p> testpara</p>
+
+    <p class="output"> para 2</p>
+
+    <h1>
+            Expression evaluation with math.js, pretty printing with Katex
+          </h1>
+          
+          
+          
+          <table>
+            <tr>
+              <th>Expression</th>
+              <td><input type="text" id="expr"/></td>
+            </tr>
+            <tr>
+              <th>Pretty print</th>
+              <td><div id="pretty">$$$$</div></td>
+            </tr>
+            <tr>
+              <th>Result</th>
+              <td><div id="result"></div></td>
+            </tr>
+              <tr>
+              <th>transfo</th>
+              <td><div id="transfo"></div></td>
+            </tr>
+          </table>
+          <b>Parenthesis option:</b>
+          <input type="radio" name="parenthesis" value="keep" onclick="parenthesis = 'keep'; expr.oninput();" checked>keep
+          <input type="radio" name="parenthesis" value="auto" onclick="parenthesis = 'auto'; expr.oninput();">auto
+          <input type="radio" name="parenthesis" value="all" onclick="parenthesis = 'all'; expr.oninput();">all
+          <br/>
+          <b>Implicit multiplication:</b>
+          <input type="radio" name="implicit" value="hide" onclick="implicit = 'hide'; expr.oninput();" checked>hide
+          <input type="radio" name="implicit" value="show" onclick="implicit = 'show'; expr.oninput();">show
+          
+
+    <p > inclusie in deze para 
 <script>
 
-    document.write('test ' + (3+500));
+var out = document.querySelector(".output");
+
+  var expr = document.getElementById('expr'),
+      pretty = document.getElementById('pretty'),
+      result = document.getElementById('result'),
+      parenthesis = 'keep',
+      implicit = 'hide';
+
+expr.oninput = function () {
+    
+    var node = math.parse(expr.value)
+
+      try {
+      // export the expression to LaTeX
+        var latex = node ? node.toTex({parenthesis: parenthesis, implicit: implicit}) : '';
+      console.log('LaTeX expression:', latex);
+
+      // display and re-render the expression
+      katex.render(latex, pretty);
+    }
+    catch (err) {pretty.innerHTML = "error!!!"}
+
+}
+
+ document.onkeydown = keysPressed
+ document.onkeyup = keysReleased
+  
+function  keysPressed(e) {
+
+if (e.shiftKey == 1)
+    switch (e.keyCode) {
+        case 37: out.innerHTML = 'left'; break;
+        case 38: out.innerHTML = 'up'; break;
+        case 39: out.innerHTML = 'right'; break;
+        case 40: out.innerHTML = 'down'; break;
+    }
+
+else if (e.ctrlKey == 1)
+    switch (e.keyCode) {
+        case 37: out.innerHTML = 'CTRLleft';break;
+        case 38: out.innerHTML = 'up'; break;
+        case 39: out.innerHTML = 'right'; break;
+        case 40: out.innerHTML = 'down'; break;
+    }
+
+else if (e.metaKey == 1)
+
+    switch (e.keyCode) {
+        case 37: out.innerHTML = 'left'; break;
+        case 38: out.innerHTML = 'up'; break;
+        case 39: out.innerHTML = 'right'; break;
+        case 40: out.innerHTML = 'down'; break;
+
+        case 70: e.preventDefault(); out.innerHTML = 'meta f'; break;
+    }
+
+else if (e.altKey == 1)
+
+    switch (e.keyCode) {
+        case 37: out.innerHTML = 'left'; break;
+        case 38: out.innerHTML = 'up'; break;
+        case 39: out.innerHTML = 'right'; break;
+        case 40: out.innerHTML = 'down'; break;
+    }
+
+else
+
+    switch (e.keyCode) {
+        case 37: out.innerHTML = 'left'; break;
+        case 38: out.innerHTML = 'up'; break;
+        case 39: out.innerHTML = 'right';  katex.render("\\rightarrow", pretty); break;
+        case 40: out.innerHTML = 'down'; break;
+    }
+};
+
+
+
 </script>
+
+</p>
+
+<ol>
+    <li>een
+        <script> document.write("nebun") </script>
+    </li>
+    <li>twee</li>
+    <li>drie</li>
+</ul>
+
 
 </body>
