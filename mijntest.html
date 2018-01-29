@@ -130,12 +130,166 @@ math.import(customFunctions);
 
 // einde speciale functies (oa select)
 
+// invert functie van internet (support voor dubbele values). Accepteert alleen arrays als keys in het originele object
+
+var invert = function(input) {
+      var output = {}
+
+      Object.keys(input).forEach(function(key) {
+        var value = input[key]
+        output[value] = output[value] || []
+        output[value].push(key.split(','))
+      })
+
+      return output
+}
+
+// verander values die stringified arrays zijn 
+
+function buildpath(bignode) {
+
+  var zigzaglist = [];
+  var adress = [];
+  var lastchildatlevel = [];
+  var adresslist = new Object;
+
+    bignode.traverse(function (child,arg,parent) {
+
+switch (child.type) {
+    case 'OperatorNode': name = child.op;    break;
+    case 'ConstantNode': name = child.value; break;
+    case 'FunctionNode': name = child.fn;    break;
+    case 'SymbolNode':   name = child.name;  break;
+    default:             name = child.type;
+  }
+
+ if (arg==null) {arg='root?'}
+
+ switch (arg.slice(0,4)) {
+     case 'args':    argnum = /\d+/.exec(arg); break ;
+     case 'Conte':   argnum = 0; break; 
+     default:       argnum = 8;
+ }
+
+ if (parent == null) {
+     totalargs = 0
+ } else {
+    parent.args == undefined ? totalargs = 0 : totalargs = parent.args.length - 1
+ }
+
+ var leaf = child.args == undefined & child.content == undefined;
+ var lastchild = argnum == totalargs;
+
+ adress.push(arg);
+
+console.log(name + ':' + adress);
+
+ adresslist[adress] = name;
+
+console.log('arg:'+ arg + 'argnum: '+argnum + 'totalargs:' + totalargs);
+
+if (lastchild) {
+        lastchildatlevel[adress.length]=1;
+    };
+    console.log(lastchildatlevel);
+    console.log('lastchild=' + lastchild);
+
+ if (leaf == 1) {
+     
+    adress.pop()
+
+    console.log('leafpop');
+
+    if (lastchild == true) {
+
+        console.log('leaf+lastchild');
+
+        while (lastchildatlevel[lastchildatlevel.length -1 ] == 1) {
+            adress.pop();
+            lastchildatlevel.pop();
+            console.log('poptit: '+ lastchildatlevel.length);
+        };
+     //   adress.pop();
+    };
+    
+
+};
+
+
+    }
+    );
+
+ return adresslist;
+};
+
+function adresses(string, bignode) {
+    return invert(buildpath(bignode))[string];
+}
+
+function readatadress(adress,bignode) {
+
+    var node = math.parse('');
+
+    for (i = 0; i < adress.length; i++) {
+        arg = adress[i];
+        switch (arg.slice(0,4)) {
+            case 'root':   node = bignode; break;
+            case 'args':    node = node.args[/\d+/.exec(arg)]; break;
+            case 'Conte':   node = node.Content; break; 
+            default:        alert('error: non-valid adress');
+        };
+        
+    };
+
+    return node;
+;}
+
+function injectatadress(subst,adress,bignode) {
+    if (typeof subst === 'string') { subst = math.parse(subst)};
+
+    var eq = bignode;
+    var adresstext = '';
+
+    for (i = 0; i < adress.length; i++) {
+        arg = adress[i];
+        switch (arg.slice(0,4)) {
+            case 'root':    adresstext = ''; console.log(arg, adresstext); break;
+            case 'args':    adresstext = adresstext + '.args[' + /\d+/.exec(arg) + ']'; console.log(arg, adresstext); break;
+            case 'Conte':   adresstext = adresstext + '.Content'; console.log(arg, adresstext); break; 
+            default:        alert('error: non-valid adress');
+        };
+        
+    };
+
+    console.log('adrestext:' + adresstext + ' subst: ' + subst);
+// PAS OP WANT DIT IS DESTRUCTIEF en vERANDERT DE OORSPRONKELIJKE VARIABELE !!!
+    eval('eq'+adresstext+ '= subst');
+    return eq;
+};
+
+
+function substituteselected(subst, bignode) {
+    if (typeof subst === 'string') { subst = math.parse(subst)};
+    // mss hier nog eerst een select rond de string draaien? Of dat overlaten aan inputter?
+
+    // replace in all select adresses
+    adresses('select', bignode).forEach(function (adress) {
+        injectatadress(subst,adress,bignode);
+}
+    );
+
+};
+
+
 function substituteselected(subst, bignode) {
     
+ subst = subst.replace('Select', 'Salect');
+ subst = math.parse(subst);
+
     eq = bignode.transform(function (node, path, parent) {
   if (node.name === 'Select') {
       console.log('subbed')
-    return substitution;
+    return subst;
   }
 
 //  }
@@ -195,7 +349,7 @@ updatelatex(equation);
 
 
 function pluskey() {
-    expr.value = '(x^3)/(Select(cos(3x))^2)'
+    expr.value = 'x^3/Select(cos(3x))^2'
 }
 
 function timeskey() {
@@ -203,7 +357,7 @@ function timeskey() {
 }
 function powerkey() {
 
-substitution = math.parse('(Salect(x)) ^ y');
+substitution = '(Select(x)) ^ y';
 equation = substituteselected( substitution, equation);
 updatelatex(equation);
 
@@ -213,19 +367,27 @@ function minuskey() {
 }
 function dividekey() {
 
-substitution = math.parse('(Salect(x)) / y');
+substitution = '(Select(x)) / y';
 equation = substituteselected( substitution, equation);
 updatelatex(equation);
 }
 function nthrootkey() {
 
-substitution = math.parse('nthRoot(Salect(x),n)');
+substitution = 'nthRoot(Select(x),n)';
 equation = substituteselected( substitution, equation);
 updatelatex(equation);
 }
 function equalskey() {
     equation = math.parse('Select(a)==b');
     updatelatex(equation);
+}
+
+function leftselect() {
+    // if arg[n] is select(...) then arg[n].killselect; arg[n-1].giveselect; else check next arg. 
+}
+
+function rightselect() {
+    
 }
 
 expr.oninput = function () {
@@ -278,9 +440,9 @@ else if (e.altKey == 1)
 else
 
     switch (e.keyCode) {
-        case 37: out.innerHTML = 'left'; break;
+        case 37: out.innerHTML = 'left'; leftselect(); break;
         case 38: out.innerHTML = 'up'; break;
-        case 39: out.innerHTML = 'right';  katex.render("\\rightarrow", pretty); break;
+        case 39: out.innerHTML = 'right'; rightselect(); break;
         case 40: out.innerHTML = 'down'; break;
         
         case 173: pluskey(); break;
@@ -290,6 +452,9 @@ else
         case 160: dividekey(); break;
         case 165: nthrootkey(); break;
         case 61: equalskey(); break;
+
+        case 53: equation = math.parse(expr.value); updatelatex(equation);
+        case 54: updatelatex(equation);
     }
 };
 
