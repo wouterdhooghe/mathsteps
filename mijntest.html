@@ -101,6 +101,7 @@ var out = document.querySelector(".output");
 // Selectfunctie en andere speciale functies
 
 var customFunctions = {
+    // deze werkt nu nog niet met een willekeurig aantal elementen!!!
   plus: function (a, b) {
     return a + b;
   },
@@ -117,7 +118,16 @@ var customFunctions = {
 
 };
 
-customFunctions.plus.toTex = '${args[0]}+${args[1]}'; //template string
+customFunctions.plus.toTex = function (node, options) {
+    
+    totalargs = node.args.length;
+    outputs = [];
+    for (i=0; i<totalargs; i++) {
+        outputs.push(node.args[i].toTex(options));
+    };
+    console.log(outputs.join);
+    return outputs.join('+');
+};
 customFunctions.binom.toTex = '\\mathrm{${name}}\\left(${args}\\right)'; //template string
 customFunctions.minus.toTex = function (node, options) { return node.args[0].toTex(options) 
   + node.name + node.args[1].toTex(options);
@@ -354,10 +364,11 @@ updatelatex = function (node) {
       // export the expression to LaTeX
         var latex = node ? node.toTex({parenthesis: parenthesis, implicit: implicit}) : '';
 //      console.log('LaTeX expression:', latex);
+        var largelatex = '\\large ' + latex;
         var hugelatex = '\\Huge ' + latex;
 
       // display and re-render the expression
-      katex.render(hugelatex, pretty);
+      katex.render(largelatex, pretty);
     }
     catch (err) {pretty.innerHTML = "error!!!"}
 }
