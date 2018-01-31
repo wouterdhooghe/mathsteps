@@ -175,7 +175,7 @@ switch (child.type) {
 
  switch (arg.slice(0,4)) {
      case 'args':    argnum = /\d+/.exec(arg); break ;
-     case 'conte':   argnum = 0; break; 
+     case 'cont':   argnum = 0; break; 
      default:       argnum = 8;
  }
 
@@ -427,10 +427,13 @@ console.log(selectadress);
 // if (selectnode.args[1] == undefined) {console.log('only one argument'); return};
 // console.log('more than one argument');
 
-// vind het nummer van dit argument, en het aantal argumenten
-huidignummer = Number(/\d+/.exec(selectadress[selectadress.length -1])[0]);
-console.log('huidignummer: ');
-console.log(huidignummer);
+// vind het nummer van dit argument
+if (selectadress[selectadress.length - 1] == 'content') {
+    huidignummer = 0;
+} 
+else {
+    huidignummer = Number(/\d+/.exec(selectadress[selectadress.length -1])[0]);
+};
 
 upadress = returnwithoutlast(selectadress);
 console.log('upadress: ');
@@ -438,7 +441,13 @@ console.log(upadress);
 
 nieuwnummer = Math.max(0,huidignummer - 1);
 
-leftadress = upadress.concat(['args[' + nieuwnummer +']']);
+if (selectadress[selectadress.length - 1] == 'content') {
+    leftadress = upadress.concat(['content']);
+} 
+else {
+    leftadress = upadress.concat(['args[' + nieuwnummer +']']);
+};
+
 console.log('leftadress: ');
 console.log(leftadress);
 
@@ -462,7 +471,12 @@ console.log(selectadress);
 // console.log('more than one argument');
 
 // vind het nummer van dit argument, en het aantal argumenten
-huidignummer = Number(/\d+/.exec(selectadress[selectadress.length -1])[0]);
+if (selectadress[selectadress.length - 1] == 'content') {
+    huidignummer = 0;
+} 
+else {
+    huidignummer = Number(/\d+/.exec(selectadress[selectadress.length -1])[0]);
+};
 console.log('huidignummer: ');
 console.log(huidignummer);
 
@@ -477,7 +491,12 @@ console.log('laatstenummer: ' + laatstenummer);
 nieuwnummer = Math.min(huidignummer + 1,laatstenummer);
 console.log('nieuwnummer: ' + nieuwnummer);
 
-rightadress = upadress.concat(['args[' + nieuwnummer +']']);
+if (selectadress[selectadress.length - 1] == 'content') {
+    rightadress = upadress.concat(['content']);
+} 
+else {
+    rightadress = upadress.concat(['args[' + nieuwnummer +']']);
+};
 console.log('rightadress: ');
 console.log(rightadress);
 
@@ -528,8 +547,8 @@ selectnode = readatadress(selectadress,eq);
     if (selectnode.args[0].args == undefined & selectnode.args[0].content == undefined) {return};
 // ALLEEN ALS GEEN CONTENT ALS CONTENT DAN select.adress.content
 if (selectnode.args[0].content == undefined) {downadress = selectadress.concat(['args[0]']);} 
-else if (selectnode.args[0].args == undefined) {return}
-else {downadress = selectadress.concat(['content']);};
+else if (selectnode.args[0].args == undefined) {downadress = selectadress.concat(['content']);}
+else {return};
 
 console.log(' downadress: ');
 console.log(downadress);
