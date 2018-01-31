@@ -427,7 +427,7 @@ console.log(selectadress);
 // console.log('more than one argument');
 
 // vind het nummer van dit argument, en het aantal argumenten
-huidignummer = /\d+/.exec(selectadress[selectadress.length -1]);
+huidignummer = Number(/\d+/.exec(selectadress[selectadress.length -1])[0]);
 console.log('huidignummer: ');
 console.log(huidignummer);
 
@@ -461,7 +461,7 @@ console.log(selectadress);
 // console.log('more than one argument');
 
 // vind het nummer van dit argument, en het aantal argumenten
-huidignummer = /\d+/.exec(selectadress[selectadress.length -1]);
+huidignummer = Number(/\d+/.exec(selectadress[selectadress.length -1])[0]);
 console.log('huidignummer: ');
 console.log(huidignummer);
 
