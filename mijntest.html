@@ -144,11 +144,19 @@ var invert = function(input) {
       return output
 }
 
-// verander values die stringified arrays zijn 
+// niet destructief alternatief voor pop()
+function returnwithoutlast(arr) {
+newarr = [];
+    for (i=0; i < arr.length - 1; i++) {
+        newarr[i] = arr[i];
+    };
+return newarr;
+};
+
+// bouw een object met als keys de adressen in de uitdrukking bignode en als values het symbool op elk adres
 
 function buildpath(bignode) {
 
-  var zigzaglist = [];
   var adress = [];
   var lastchildatlevel = [];
   var adresslist = new Object;
@@ -167,7 +175,7 @@ switch (child.type) {
 
  switch (arg.slice(0,4)) {
      case 'args':    argnum = /\d+/.exec(arg); break ;
-     case 'Conte':   argnum = 0; break; 
+     case 'conte':   argnum = 0; break; 
      default:       argnum = 8;
  }
 
@@ -182,32 +190,32 @@ switch (child.type) {
 
  adress.push(arg);
 
-console.log(name + ':' + adress);
+// console.log(name + ':' + adress);
 
  adresslist[adress] = name;
 
-console.log('arg:'+ arg + 'argnum: '+argnum + 'totalargs:' + totalargs);
+// console.log('arg:'+ arg + 'argnum: '+argnum + 'totalargs:' + totalargs);
 
 if (lastchild) {
         lastchildatlevel[adress.length]=1;
     };
-    console.log(lastchildatlevel);
-    console.log('lastchild=' + lastchild);
+ //   console.log(lastchildatlevel);
+ //   console.log('lastchild=' + lastchild);
 
  if (leaf == 1) {
      
     adress.pop()
 
-    console.log('leafpop');
+ //   console.log('leafpop');
 
     if (lastchild == true) {
 
-        console.log('leaf+lastchild');
+ //       console.log('leaf+lastchild');
 
         while (lastchildatlevel[lastchildatlevel.length -1 ] == 1) {
             adress.pop();
             lastchildatlevel.pop();
-            console.log('poptit: '+ lastchildatlevel.length);
+ //           console.log('poptit: '+ lastchildatlevel.length);
         };
      //   adress.pop();
     };
@@ -215,17 +223,18 @@ if (lastchild) {
 
 };
 
-
     }
     );
 
  return adresslist;
 };
 
+// geeft een array terug met alle adressen van de gevraagde string in de uitdrukking bignode
 function adresses(string, bignode) {
     return invert(buildpath(bignode))[string];
 }
 
+// geeft de uitdrukking die op het gegeven adres staat in de uitdrukking bignode
 function readatadress(adress,bignode) {
 
     var node = math.parse('');
@@ -233,10 +242,10 @@ function readatadress(adress,bignode) {
     for (i = 0; i < adress.length; i++) {
         arg = adress[i];
         switch (arg.slice(0,4)) {
-            case 'root':   node = bignode; break;
-            case 'args':    node = node.args[/\d+/.exec(arg)]; break;
-            case 'Conte':   node = node.Content; break; 
-            default:        alert('error: non-valid adress');
+            case 'root':   node = bignode; console.log('readroot'); break;
+            case 'args':    node = node.args[/\d+/.exec(arg)]; console.log('readargs['+/\d+/.exec(arg)+']'); break;
+            case 'cont':   node = node.content; console.log('readcontent'); break; 
+            default:        alert('error: non-valid adress: ' + arg);
         };
         
     };
@@ -253,34 +262,41 @@ function injectatadress(subst,adress,bignode) {
     for (i = 0; i < adress.length; i++) {
         arg = adress[i];
         switch (arg.slice(0,4)) {
-            case 'root':    adresstext = ''; console.log(arg, adresstext); break;
-            case 'args':    adresstext = adresstext + '.args[' + /\d+/.exec(arg) + ']'; console.log(arg, adresstext); break;
-            case 'Conte':   adresstext = adresstext + '.Content'; console.log(arg, adresstext); break; 
-            default:        alert('error: non-valid adress');
+            case 'root':    adresstext = ''; /* console.log(arg, adresstext) */; break;
+            case 'args':    adresstext = adresstext + '.args[' + /\d+/.exec(arg) + ']'; /* console.log(arg, adresstext) */; break;
+            case 'cont':   adresstext = adresstext + '.content'; /* console.log(arg, adresstext) */; break; 
+            default:        alert('error: non-valid adress' + arg);
         };
         
     };
 
-    console.log('adrestext:' + adresstext + ' subst: ' + subst);
+ //   console.log('adrestext:' + adresstext + ' subst: ' + subst);
 // PAS OP WANT DIT IS DESTRUCTIEF en vERANDERT DE OORSPRONKELIJKE VARIABELE !!!
+// IS DAT ECHT ZO? CHECK DIT!
     eval('eq'+adresstext+ '= subst');
     return eq;
 };
 
+// zet een Select() rond de gegeven uitdrukking (mag in stringvorm of in objectvorm zijn)
+function selectit(node) {
+    if (typeof node === 'string') { node = math.parse(node)};
+    return new math.expression.node.FunctionNode('Select', [node]);
+}
 
+// vervangt wat nu geselecteerd is in bignode door de opgegeven substitutie (mag in stringvorm of in objectvorm zijn)
+// de substitutie moet zelf al een Select bevatten want deze functie voegt die niet toe
 function substituteselected(subst, bignode) {
     if (typeof subst === 'string') { subst = math.parse(subst)};
-    // mss hier nog eerst een select rond de string draaien? Of dat overlaten aan inputter?
 
     // replace in all select adresses
-    adresses('select', bignode).forEach(function (adress) {
+    adresses('Select', bignode).forEach(function (adress) {
         injectatadress(subst,adress,bignode);
 }
     );
-
+    return bignode;
 };
 
-
+/* OUDE VERSIE MET TRANSFORM FUNCTIE
 function substituteselected(subst, bignode) {
     
  subst = subst.replace('Select', 'Salect');
@@ -314,7 +330,7 @@ eq = eq.transform(function (node, path, parent) {
 return eq
 
 };
-
+ */
 
 
 var equation = math.parse('');
@@ -337,7 +353,7 @@ updatelatex = function (node) {
 
       // export the expression to LaTeX
         var latex = node ? node.toTex({parenthesis: parenthesis, implicit: implicit}) : '';
-      console.log('LaTeX expression:', latex);
+//      console.log('LaTeX expression:', latex);
 
       // display and re-render the expression
       katex.render(latex, pretty);
@@ -347,6 +363,20 @@ updatelatex = function (node) {
 
 updatelatex(equation);
 
+// verplaatst de selectie naar het gevraagde adress
+// past global variabele equation aan!
+function MoveSelectToAdress(selectadress,newadress,eq) {
+    // select eruit halen (dit werkt is getest)
+    var cleanedequation = eq.transform(function (child, path, parent) {
+        if (child.fn == 'Select') {return child.args[0] } else { return child};
+    });
+console.log('cleaned');
+
+ eq = injectatadress(selectit(readatadress(newadress, cleanedequation)),newadress,cleanedequation);
+ console.log('injected');
+ equation = eq;
+
+};
 
 function pluskey() {
     expr.value = 'x^3/Select(cos(3x))^2'
@@ -382,14 +412,141 @@ function equalskey() {
     updatelatex(equation);
 }
 
-function leftselect() {
-    // if arg[n] is select(...) then arg[n].killselect; arg[n-1].giveselect; else check next arg. 
+function leftselect(eq) {
+
+// bereken het nieuwe adres voor select
+// dit is maar 1 enkel selectadres dus momenteel werkt deze functie alleen voor enkele selecties 
+selectadress = adresses('Select',eq)[0];
+console.log('selectadress: ');
+console.log(selectadress);
+
+// als Select maar 1 kind heeft: doe niks: ONDERSTAANDE CODE WERKT NIET WANT MOET OVER PARENT GAAN IPV OVER SELECTNODE
+// eigenlijk moet dit niet niet gecontroleerd worden voor links
+// selectnode = readatadress(selectadress,eq);
+// if (selectnode.args[1] == undefined) {console.log('only one argument'); return};
+// console.log('more than one argument');
+
+// vind het nummer van dit argument, en het aantal argumenten
+huidignummer = /\d+/.exec(selectadress[selectadress.length -1]);
+console.log('huidignummer: ');
+console.log(huidignummer);
+
+upadress = returnwithoutlast(selectadress);
+console.log('upadress: ');
+console.log(upadress);
+
+nieuwnummer = Math.max(0,huidignummer - 1);
+
+leftadress = upadress.concat(['args[' + nieuwnummer +']']);
+console.log('leftadress: ');
+console.log(leftadress);
+
+MoveSelectToAdress(selectadress,leftadress,eq);
+
+updatelatex(equation);
+
 }
 
-function rightselect() {
-    
+function rightselect(eq) {
+    // bereken het nieuwe adres voor select
+// dit is maar 1 enkel selectadres dus momenteel werkt deze functie alleen voor enkele selecties 
+selectadress = adresses('Select',eq)[0];
+console.log('selectadress: ');
+console.log(selectadress);
+
+// als Select maar 1 kind heeft: doe niks: ONDERSTAANDE CODE WERKT NIET WANT MOET OVER PARENT GAAN IPV OVER SELECTNODE
+// eigenlijk moet dit niet niet gecontroleerd worden voor links
+// selectnode = readatadress(selectadress,eq);
+// if (selectnode.args[1] == undefined) {console.log('only one argument'); return};
+// console.log('more than one argument');
+
+// vind het nummer van dit argument, en het aantal argumenten
+huidignummer = /\d+/.exec(selectadress[selectadress.length -1]);
+console.log('huidignummer: ');
+console.log(huidignummer);
+
+upadress = returnwithoutlast(selectadress);
+console.log('upadress: ');
+console.log(upadress);
+
+upnode = readatadress(upadress, eq);
+upnode.args == undefined ? laatstenummer = 0 : laatstenummer = upnode.args.length - 1;
+console.log('laatstenummer: ' + laatstenummer);
+
+nieuwnummer = Math.min(huidignummer + 1,laatstenummer);
+console.log('nieuwnummer: ' + nieuwnummer);
+
+rightadress = upadress.concat(['args[' + nieuwnummer +']']);
+console.log('rightadress: ');
+console.log(rightadress);
+
+MoveSelectToAdress(selectadress,rightadress,eq);
+
+updatelatex(equation);
 }
 
+function upselect(eq) {
+    // als Select al de root is: doe niks
+if (eq.fn == 'Select') {return}; 
+    // bereken het nieuwe adres voor select
+
+// dit is maar 1 enkel selectadres dus momenteel werkt deze functie alleen voor enkele selecties    
+selectadress = adresses('Select',eq)[0];
+console.log('selectadress: ');
+console.log(selectadress);
+
+upadress = returnwithoutlast(selectadress);
+console.log(' upadress: ');
+console.log(upadress);
+
+//     // select eruit halen (dit werkt is getest)
+//     var cleanedequation = eq.transform(function (child, path, parent) {
+//         if (child.fn == 'Select') {return child.args[0] } else { return child};
+//     });
+// console.log('cleaned');
+
+//  eq = injectatadress(selectit(readatadress(upadress, cleanedequation)),upadress,cleanedequation);
+//  console.log('injected');
+//  equation = eq;
+
+MoveSelectToAdress(selectadress,upadress,eq);
+
+updatelatex(equation);
+}
+
+function downselect(eq) {
+
+// dit is maar 1 enkel selectadres dus momenteel werkt deze functie alleen voor enkele selecties    
+selectadress = adresses('Select',eq)[0];
+console.log('selectadress: ');
+console.log(selectadress);
+
+selectnode = readatadress(selectadress,eq);
+
+// als Select een leaf is: doe niks
+    if (selectnode.args == undefined & selectnode.content == undefined) {return};
+// ALLEEN ALS GEEN CONTENT ALS CONTENT DAN select.adress.content
+if (selectnode.content == undefined) {downadress = selectadress.concat(['args[0]']);} 
+else if (selectnode.args == undefined) {return}
+else {downadress = selectadress.concat(['content']);};
+
+console.log(' downadress: ');
+console.log(downadress);
+
+//     // select eruit halen (dit werkt is getest)
+//     var cleanedequation = eq.transform(function (child, path, parent) {
+//         if (child.fn == 'Select') {return child.args[0] } else { return child};
+//     });
+// console.log('cleaned');
+
+//  eq = injectatadress(selectit(readatadress(downadress, cleanedequation)),downadress,cleanedequation);
+//  console.log('injected');
+//  equation = eq;
+
+MoveSelectToAdress(selectadress,downadress,eq);
+
+ updatelatex(equation);
+}
 expr.oninput = function () {
     
     equation = math.parse(expr.value)
@@ -440,10 +597,10 @@ else if (e.altKey == 1)
 else
 
     switch (e.keyCode) {
-        case 37: out.innerHTML = 'left'; leftselect(); break;
-        case 38: out.innerHTML = 'up'; break;
-        case 39: out.innerHTML = 'right'; rightselect(); break;
-        case 40: out.innerHTML = 'down'; break;
+        case 37: out.innerHTML = 'left'; leftselect(equation); break;
+        case 38: out.innerHTML = 'up'; e.preventDefault(); upselect(equation); break;
+        case 39: out.innerHTML = 'right'; rightselect(equation); break;
+        case 40: out.innerHTML = 'down'; e.preventDefault(); downselect(equation); break;
         
         case 173: pluskey(); break;
         case 164: timeskey(); break;
