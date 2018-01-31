@@ -123,7 +123,7 @@ customFunctions.minus.toTex = function (node, options) { return node.args[0].toT
   + node.name + node.args[1].toTex(options);
 };
 customFunctions.Select.toTex = function (node, options) {
-  return '\\textcolor{blue}{' + node.args[0].toTex(options) + '}';
+  return '\\textcolor{red}{' + node.args[0].toTex(options) + '}';
 };
 
 math.import(customFunctions);
@@ -354,9 +354,10 @@ updatelatex = function (node) {
       // export the expression to LaTeX
         var latex = node ? node.toTex({parenthesis: parenthesis, implicit: implicit}) : '';
 //      console.log('LaTeX expression:', latex);
+        var hugelatex = '\\Huge ' + latex;
 
       // display and re-render the expression
-      katex.render(latex, pretty);
+      katex.render(hugelatex, pretty);
     }
     catch (err) {pretty.innerHTML = "error!!!"}
 }
@@ -524,10 +525,10 @@ console.log(selectadress);
 selectnode = readatadress(selectadress,eq);
 
 // als Select een leaf is: doe niks
-    if (selectnode.args == undefined & selectnode.content == undefined) {return};
+    if (selectnode.args[0].args == undefined & selectnode.args[0].content == undefined) {return};
 // ALLEEN ALS GEEN CONTENT ALS CONTENT DAN select.adress.content
-if (selectnode.content == undefined) {downadress = selectadress.concat(['args[0]']);} 
-else if (selectnode.args == undefined) {return}
+if (selectnode.args[0].content == undefined) {downadress = selectadress.concat(['args[0]']);} 
+else if (selectnode.args[0].args == undefined) {return}
 else {downadress = selectadress.concat(['content']);};
 
 console.log(' downadress: ');
